@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Turn Your Screentime Into Cash</title>
+  <style>
+    *{box-sizing:border-box}
+    html,body{margin:0;min-height:100%;background:transparent;font-family:Arial,Helvetica,sans-serif}
+    body{min-height:100dvh;display:grid;place-items:center;padding:24px 16px;color:#080808}
+    .card{width:100%;max-width:380px;background:#fff;border-radius:36px;padding:30px 24px 24px;text-align:center;box-shadow:0 12px 36px #00000012}
+    .art{display:block;width:80%;height:auto;margin:4px auto 24px}
+    h1{font-size:25px;line-height:1.2;letter-spacing:-.7px;margin:0 0 17px;font-weight:750}
+    p{font-size:16px;line-height:1.55;color:#979797;margin:0 0 24px}
+    .continue{display:flex;align-items:center;justify-content:center;min-height:60px;width:100%;border-radius:99px;background:#ff3155;color:#fff;text-decoration:none;font-size:21px;font-weight:700;box-shadow:0 10px 22px #ff315535}
+    .continue:hover{background:#ec2448}.continue:focus-visible{outline:3px solid #1767e9;outline-offset:5px}
+    @media(max-height:550px){body{padding:12px}.card{padding:18px 22px;border-radius:28px;max-width:340px}.art{width:65%;margin:0 auto 12px}h1{font-size:22px;margin-bottom:10px}p{font-size:14px;margin-bottom:16px}.continue{min-height:50px;font-size:18px}}
+  </style>
+</head>
+<body>
+  <main class="card" aria-labelledby="title">
+    <svg class="art" viewBox="0 0 300 175" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      <path d="m31 42 47-9 7 40-47 9z" fill="#7bc77d" transform="rotate(-6 55 55)"/>
+      <path d="M43 94C43 42 80 26 125 27c49 0 78 30 78 73 0 42-31 62-79 62-47 0-81-22-81-68" fill="#8edcf1"/>
+      <path d="M88 133q-16 13-8 24M205 142q14 3 22-10" fill="none" stroke="#73cee7" stroke-width="11" stroke-linecap="round"/>
+      <circle cx="82" cy="92" r="6" fill="#174a60"/><circle cx="180" cy="92" r="6" fill="#174a60"/>
+      <circle cx="84" cy="90" r="2" fill="white"/><circle cx="182" cy="90" r="2" fill="white"/>
+      <ellipse cx="65" cy="109" rx="7" ry="4" fill="#f4abc5"/><ellipse cx="200" cy="109" rx="7" ry="4" fill="#f4abc5"/>
+      <rect x="123" y="83" width="51" height="83" rx="13" fill="#3969f8"/>
+      <rect x="129" y="91" width="39" height="67" rx="7" fill="white"/>
+      <rect x="138" y="106" width="22" height="23" rx="5" fill="#3969f8"/>
+      <text x="149" y="123" text-anchor="middle" fill="white" font-family="Arial" font-size="17">A</text>
+      <path d="M138 140h21m-16 8h12" stroke="#dfe1e8" stroke-width="4" stroke-linecap="round"/>
+      <path d="M218 40c-17-16-32 6-18 18l18 17 17-18c13-16-4-31-17-17" fill="#ff668b"/>
+      <g fill="#ffce35" stroke="#e3a917" stroke-width="2"><circle cx="251" cy="113" r="19"/><circle cx="279" cy="80" r="13"/></g>
+      <g fill="#b0800d" font-family="Arial" text-anchor="middle" font-weight="bold"><text x="251" y="121" font-size="24">$</text><text x="279" y="86" font-size="17">$</text></g>
+      <path d="m39 10 3 8 8 3-8 3-3 8-3-8-8-3 8-3zM279 7l3 7 7 3-7 3-3 7-3-7-7-3 7-3z" fill="#f5d839"/>
+      <circle cx="15" cy="72" r="4" fill="#8edcf1"/><circle cx="297" cy="128" r="4" fill="#f26a90"/>
+    </svg>
+    <h1 id="title">Turn Your Screentime Into Cash</h1>
+    <p>Complete simple activities, explore new apps, and earn real rewards for the time you already spend on your phone.</p>
+    <a class="continue" id="continue" href="index.html">Continue</a>
+  </main>
+  <script>
+    const destination = new URL('index.html', location.href);
+    const params = new URLSearchParams(location.search);
+    params.delete('stage');
+    destination.search = params.toString();
+    document.getElementById('continue').href = destination.href;
+  </script>
+</body>
+</html>
