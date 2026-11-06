@@ -18,7 +18,7 @@
   </style>
 </head>
 <body>
-  <main class="card" aria-labelledby="title" hidden>
+  <main class="card" aria-labelledby="title">
     <svg class="art" viewBox="0 0 300 175" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
       <path d="m31 42 47-9 7 40-47 9z" fill="#7bc77d" transform="rotate(-6 55 55)"/>
       <path d="M43 94C43 42 80 26 125 27c49 0 78 30 78 73 0 42-31 62-79 62-47 0-81-22-81-68" fill="#8edcf1"/>
@@ -47,10 +47,6 @@
     params.delete('stage');
     destination.search = params.toString();
     document.getElementById('continue').href = destination.href;
-    // Keep the card hidden and unfocusable until ten seconds after page setup.
-    window.setTimeout(() => {
-      document.querySelector('.card').hidden = false;
-    }, 10_000);
   </script>
 </body>
 </html>
