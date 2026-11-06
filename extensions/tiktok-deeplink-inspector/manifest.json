@@ -1,0 +1,7 @@
+{
+  "manifest_version": 3,
+  "name": "TikTok Draft Deeplink Inspector",
+  "version": "0.1.0",
+  "description": "Inspect link configuration in Ads Manager draft requests without changing or publishing ads.",
+  "devtools_page": "devtools.html"
+}
