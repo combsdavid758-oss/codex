@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "TikTok Draft Deeplink Inspector",
-  "version": "0.1.0",
-  "description": "Inspect link configuration in Ads Manager draft requests without changing or publishing ads.",
+  "version": "0.2.0",
+  "description": "Inspect form saves and optionally test removal of a recognized contact-only card in one draft save.",
   "devtools_page": "devtools.html"
 }

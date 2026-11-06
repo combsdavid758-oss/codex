@@ -1,25 +1,50 @@
-# Draft deeplink inspector
+# Draft form experiment — version 0.2.0
 
-This is a diagnostic Chrome extension, not a working bypass of TikTok destination
-restrictions. It adds a TikTok Links tab to desktop Chrome DevTools, generates the
-popup scheme, and shows selected link configuration from draft save requests.
-It never modifies requests or submits/publishes ads. A successful HTTP response
-does not prove a field was saved, accepted or delivered to viewers.
+The TikTok Links DevTools panel can inspect requests and optionally modify ONE
+recognized draft save to remove a contact-information card. TikTok backend
+acceptance, saved-form rendering, and delivery are unverified. Removing a question
+does not remove the newer runtime's automatic-link limits.
 
-## Install and use
+## Install/update
 
-1. Download and extract the extension ZIP. Keep all files in one folder.
-2. In desktop Chrome, open `chrome://extensions` and turn on Developer mode.
-3. Choose Load unpacked and select the extracted folder containing manifest.json.
-4. Open TikTok Ads Manager, then open DevTools (F12 or Ctrl+Shift+I;
-   on Mac Cmd+Option+I). Select TikTok Links, possibly under the overflow menu.
-5. Click Start capture and save a draft manually, then click Stop capture.
-6. Compare the captured fields with a draft using a native supported deeplink
-   field, if available. Reloading and inspecting the saved draft is needed to
-   establish persistence; live delivery is a separate capability.
+Extract the GitHub ZIP. In desktop Chrome, open chrome://extensions, enable
+Developer mode, and Load unpacked from extensions/tiktok-deeplink-inspector.
+When updating, replace the old folder, Reload the extension, and close/reopen
+DevTools. Verify extension version 0.2.0.
 
-Only ads.tiktok.com and its subdomains are observed. Other API hosts, multipart
-or binary requests, and unrecognized field names will not appear. No output is
-not proof of unsupported configuration. Query values are redacted. Review link
-paths and identifiers before sharing output. No network uploads, host access
-permissions, content scripts, or browser-wide request modification are used.
+## Test a disposable duplicate
+
+1. Open the DUPLICATE FORM editor, not an ad editor. Open DevTools > TikTok Links.
+2. Start capture. Change a draft label and click TikTok's Save control.
+   If the UI only offers Complete, stop: this experiment is for draft saves.
+3. A compatible save produces a plan with the endpoint and removed field types.
+   The test stays disabled if the body or endpoint is not recognized. Request
+   summaries and counts help diagnose missing/incompatible capture.
+4. Review the plan, confirm the disposable-duplicate checkbox, and select
+   Test removal on next matching save. This arms an in-page hook.
+5. Change the duplicate's label again and click Save. The hook modifies at most
+   one request to that exact host/path and method. It never clicks anything,
+   submits lead information, or calls a publishing endpoint on its own.
+6. Click Check test status. Check TikTok's own error/success message. Reload the
+   saved duplicate and check whether the contact question remains removed.
+   A modified request or HTTP 200 is NOT proof of acceptance or persistence.
+7. Disarm and reload the editor to remove hooks. No request bodies, credentials,
+   candidate endpoints, or enabled tests are stored on disk.
+
+## Limits
+
+Only a single cardForm containing a data map and pathList as seen in the supplied
+source is supported. The contact section, descendants and references are removed;
+welcome/final pages and unrelated wrapper settings are preserved. Custom or
+conditional questions, unknown nodes, multiple configs, binary bodies and fetch
+Request streams are not modified. The real Save payload may differ: no working
+TikTok request schema has been observed. Use only a disposable duplicate.
+
+Capture observes TikTok hostnames, omits obvious recording/telemetry paths and
+shows request summaries even without matching link fields. It does not read
+headers, cookies or response bodies. Query values in links are redacted. Endpoint
+paths and field names can contain identifiers: review before sharing.
+
+No host access permissions, browser-wide interception, network uploads or ad
+publication are used. Other scripts or navigation may replace/reset the hook.
+Reload is the reliable reset. The live website is not changed by this extension.

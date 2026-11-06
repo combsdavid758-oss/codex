@@ -1,16 +1,27 @@
 <!doctype html>
 <html lang="en"><head><meta charset="utf-8"><title>TikTok Links</title><link rel="stylesheet" href="panel.css"></head>
 <body><h1>Draft deeplink test</h1>
-<p>This inspector does not enable an unsupported ad destination. It reads selected link fields from requests while you save a draft. It never edits requests or publishes ads.</p>
+<p>Capture reads selected request fields. The optional question-removal test changes ONE matching draft request only after you arm it. It cannot guarantee TikTok accepts a question-free form. It does not click Publish or submit contact information.</p>
+<h2>Question-removal test — duplicate form only</h2>
+<ol><li>Open your duplicate form in the form editor, rather than the ad editor.</li><li>Start capture below. Make a small change and use TikTok's Save control.</li><li>If a compatible save is detected, review the plan and enable the one-request test below.</li></ol>
+<p>If TikTok only offers Complete, do not use it for this draft-only test. If no compatible save is detected, the test remains unavailable.</p>
+<pre id="form-plan">Waiting for a recognized form save.</pre>
+<label><input type="checkbox" id="duplicate-confirm"> I am editing a disposable duplicate form, and will click Save only.</label>
+<button id="arm" disabled>Test removal on next matching save</button>
+<button id="disarm">Disarm test</button>
+<button id="check-test">Check test status</button>
+<p id="test-status" role="status">Not armed.</p>
+<p>After a modified request, reload the saved duplicate to check whether questions stayed removed. HTTP 200 does not prove the backend accepted the change. This does not enable automatic popup launching.</p>
 <label for="destination">HTTPS popup destination</label>
 <input id="destination" type="url" value="https://glusus.vercel.app/popup.html">
 <button id="generate">Generate deeplink</button>
 <label for="deeplink">Copy into a native deeplink field if your ad editor provides one</label>
 <textarea id="deeplink" readonly rows="5"></textarea><button id="copy">Copy deeplink</button>
 <p id="status" role="status"></p>
-<h2>Inspect a draft save</h2>
+<h2>Capture form or ad saves</h2>
 <ol><li>Open Ads Manager and edit a draft. Keep this DevTools panel open.</li><li>Click Start capture, then save the draft using TikTok's editor. Do not launch an ad.</li><li>Stop capture. Look for a native deeplink field and compare a draft that supports it with your website-only draft.</li><li>If no relevant fields appear, the request may use another encoding. No result does not establish that deeplinks are unsupported.</li></ol>
 <p>Only matching link fields and their JSON paths are displayed. Headers, cookies, response bodies and unrelated fields are excluded. Links can still contain tracking identifiers: review before sharing.</p>
 <button id="capture">Start capture</button><button id="clear">Clear</button>
+<p id="capture-counts">0 requests observed.</p>
 <pre id="results">No capture yet.</pre>
-<script src="inspect.js"></script><script src="panel.js"></script></body></html>
+<script src="inspect.js"></script><script src="form-test.js"></script><script src="panel.js"></script></body></html>
