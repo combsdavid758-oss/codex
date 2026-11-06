@@ -1,4 +1,4 @@
-# Draft form experiment — version 0.2.1
+# Draft form experiment — version 0.2.2
 
 The TikTok Links DevTools panel can inspect requests and optionally modify ONE
 recognized draft save to remove a contact-information card. TikTok backend
@@ -10,9 +10,10 @@ does not remove the newer runtime's automatic-link limits.
 Extract the GitHub ZIP. In desktop Chrome, open chrome://extensions, enable
 Developer mode, and Load unpacked from extensions/tiktok-deeplink-inspector.
 When updating, replace the old folder, Reload the extension, and close/reopen
-DevTools. Verify extension version 0.2.1.
+DevTools. Verify extension version 0.2.2.
 
-This release recognizes the exact `/instant_page/api/v1/create/` request observed
+This release recognizes the exact `/instant_page/api/v1/create/` and
+`/instant_page/api/v1/update/` requests observed
 when Save produced "Saved as draft" in the user's form editor. This exception
 does not enable arbitrary create endpoints. Use the native Save control only;
 the endpoint alone does not distinguish every possible action or account state.
@@ -38,8 +39,10 @@ the endpoint alone does not distinguish every possible action or account state.
 
 ## Limits
 
-Only a single cardForm containing a data map and pathList as seen in the supplied
-source is supported. The contact section, descendants and references are removed;
+Only a single published cardForm with data/pathList, or an editor map/data
+configuration matching the supplied draft request, is supported. Editor map
+indexes are filtered alongside child references; a pathList is not invented.
+The contact section, descendants and references are removed;
 welcome/final pages and unrelated wrapper settings are preserved. Custom or
 conditional questions, unknown nodes, multiple configs, binary bodies and fetch
 Request streams are not modified. The real Save payload may differ: no working

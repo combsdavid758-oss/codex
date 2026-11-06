@@ -56,6 +56,7 @@ assert.throws(() => api.transform(JSON.stringify([fixture(), fixture()])), /exac
 assert.throws(() => api.transform(JSON.stringify({ draft_name: 'Only a name' })), /exactly one/);
 assert.equal(api.safeEndpoint('https://ads.tiktok.com/api/form/draft/save'), true);
 assert.equal(api.safeEndpoint('https://ads.tiktok.com/instant_page/api/v1/create/'), true);
+assert.equal(api.safeEndpoint('https://ads.tiktok.com/instant_page/api/v1/update/'), true);
 assert.equal(api.safeEndpoint('https://ads.tiktok.com/instant_page/api/v1/create/publish/'), false);
 assert.equal(api.safeEndpoint('https://ads.tiktok.com/api/form/create/'), false);
 for (const url of ['https://evil.test/api/form/draft/save', 'https://ads.tiktok.com.evil.test/form/draft',
@@ -98,4 +99,24 @@ for (const key of Object.keys(observed).filter(key => key !== 'data')) assert.de
 assert.equal(JSON.parse(saved.data).data.cta.url, 'https://example.com/keep-me');
 real.sandbox.fetch(createEndpoint, { method: 'POST', body: observedBody });
 assert.equal(real.calls[1][2].body, observedBody);
+const editor = fixture();
+delete editor.templateName; delete editor.pathList;
+editor.map = { Form: ['virtualForm'], Subpage: ['welcomePageSubPage', 'questionCardSubPage', 'thanksSubPage'],
+  QuestionCardSubPage: ['questionCardSubPage'], Privacy: [], CustomQuestion: ['container'],
+  FormCTA: ['cta'], unrelated: ['keep-preexisting-reference'] };
+const editorBody = JSON.stringify({ data: JSON.stringify(editor), page_id: 'duplicate-test', title: 'Keep title' });
+const editorResult = api.transform(editorBody);
+const edited = JSON.parse(JSON.parse(editorResult.text).data);
+assert.equal(editorResult.plan.format, 'editor map/data');
+assert.deepEqual(edited.map.QuestionCardSubPage, []);
+assert.deepEqual(edited.map.CustomQuestion, []);
+assert.deepEqual(edited.map.Subpage, ['welcomePageSubPage', 'thanksSubPage']);
+assert.deepEqual(edited.map.FormCTA, ['cta']);
+assert.deepEqual(edited.map.unrelated, ['keep-preexisting-reference']);
+assert.equal(edited.pathList, undefined);
+assert.equal(JSON.parse(editorResult.text).page_id, 'duplicate-test');
+const unknownMap = JSON.parse(JSON.stringify(editor)); unknownMap.map.Privacy = { unexpected: true };
+assert.throws(() => api.transform(JSON.stringify(unknownMap)), /Unrecognized editor index/);
+const orphan = JSON.parse(JSON.stringify(editor)); orphan.data.orphan = { name: 'UnknownQuestion', parent: 'card' };
+assert.throws(() => api.transform(JSON.stringify(orphan)), /Unindexed/);
 console.log('PASS: nested/URL-encoded removal; unrelated values preserved; unknown structures refused; endpoint checks; fetch/XHR one-shot interception; reset.');
