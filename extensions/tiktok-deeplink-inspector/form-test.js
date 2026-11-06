@@ -73,10 +73,14 @@ function createFormTest() {
   }
   function safeEndpoint(raw) {
     const url = new URL(raw);
+    // Observed from the user's explicit Save action (UI confirmed "Saved as draft").
+    // Do not generalize this exception to other create endpoints or form completion.
+    const observedDraftCreate = url.hostname === 'ads.tiktok.com' &&
+      url.pathname === '/instant_page/api/v1/create/';
     return url.protocol === 'https:' &&
       (url.hostname === 'ads.tiktok.com' || url.hostname.endsWith('.tiktok.com')) &&
-      /draft|form|landing.?page|lead.?page/i.test(url.pathname) &&
-      /save|update|edit|draft/i.test(url.pathname) &&
+      (observedDraftCreate || (/draft|form|landing.?page|lead.?page/i.test(url.pathname) &&
+        /save|update|edit|draft/i.test(url.pathname))) &&
       !/publish|launch|submit|complete|delete|remove/i.test(url.pathname);
   }
   return { transform, safeEndpoint };

@@ -55,6 +55,9 @@ assert.throws(() => api.transform(JSON.stringify(conditional)), /Conditional/);
 assert.throws(() => api.transform(JSON.stringify([fixture(), fixture()])), /exactly one/);
 assert.throws(() => api.transform(JSON.stringify({ draft_name: 'Only a name' })), /exactly one/);
 assert.equal(api.safeEndpoint('https://ads.tiktok.com/api/form/draft/save'), true);
+assert.equal(api.safeEndpoint('https://ads.tiktok.com/instant_page/api/v1/create/'), true);
+assert.equal(api.safeEndpoint('https://ads.tiktok.com/instant_page/api/v1/create/publish/'), false);
+assert.equal(api.safeEndpoint('https://ads.tiktok.com/api/form/create/'), false);
 for (const url of ['https://evil.test/api/form/draft/save', 'https://ads.tiktok.com.evil.test/form/draft',
   'https://ads.tiktok.com/api/form/publish', 'https://ads.tiktok.com/api/form/submit',
   'https://ads.tiktok.com/api/form/draft/publish', 'https://ads.tiktok.com/monitor/batch']) {
@@ -81,4 +84,18 @@ const e = context(); e.sandbox.installFormDraftTest(endpoint, 'POST', e.sandbox.
 const xhr2 = new e.sandbox.XMLHttpRequest(); xhr2.open('POST', endpoint);
 xhr2.setRequestHeader('Content-Type', 'application/json'); xhr2.send(body);
 assert.notEqual(e.calls.at(-1)[1], body);
+// Match the observed form-save wrapper; preserve every field except its nested data string.
+const observed = { account_id: 'test-account', title: 'Disposable duplicate', template_id: 'test-template',
+  thumbnail_uri: 'test-thumbnail', data: JSON.stringify(original), account_type: 1 };
+const real = context();
+const createEndpoint = 'https://ads.tiktok.com/instant_page/api/v1/create/';
+real.sandbox.installFormDraftTest(createEndpoint, 'POST', real.sandbox.createFormTest);
+const observedBody = JSON.stringify(observed);
+real.sandbox.fetch(createEndpoint, { method: 'POST', body: observedBody, headers: {'Content-Type': 'application/json'} });
+const saved = JSON.parse(real.calls[0][2].body);
+assert.equal(JSON.parse(saved.data).data.questionCardSubPage, undefined);
+for (const key of Object.keys(observed).filter(key => key !== 'data')) assert.deepEqual(saved[key], observed[key]);
+assert.equal(JSON.parse(saved.data).data.cta.url, 'https://example.com/keep-me');
+real.sandbox.fetch(createEndpoint, { method: 'POST', body: observedBody });
+assert.equal(real.calls[1][2].body, observedBody);
 console.log('PASS: nested/URL-encoded removal; unrelated values preserved; unknown structures refused; endpoint checks; fetch/XHR one-shot interception; reset.');
