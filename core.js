@@ -60,12 +60,13 @@ function validate(plan) {
  if(plan.deeplink.length>8000) throw Error('Deeplink is too long.');
  return plan;
 }
-function summary(d) { return {pageId:d.outer.page_id,title:String(d.outer.title||''),fallback:d.link.url||'',deeplink:d.link.scheme||'',nodeId:d.nodeId}; }
+function summary(d) { return {pageId:d.outer.page_id,title:String(d.outer.title||''),fallback:d.link.url||'',deeplink:d.link.scheme||'',nativeDeeplinkEnabled:d.link.deeplink?.enable===true,nativeDeeplinkUrl:d.link.deeplink?.url||'',nodeId:d.nodeId}; }
 function transform(body, plan) {
  validate(plan); const d=decode(body);
  if(!d || (d.outer.page_id!==plan.pageId || (plan.nodeId && d.nodeId!==plan.nodeId))) return null;
- // Only these two values change. Preserve nested deeplink flags, questions and routing.
+ // Preserve questions/routing. Nested deeplink fields change only when explicitly selected.
  d.link.url=plan.fallback; d.link.scheme=plan.deeplink;
+ if(plan.nativeDeeplink===true) d.link.deeplink={...d.link.deeplink,enable:true,url:plan.deeplink};
  return encode(d);
 }
 globalThis.FormLinkCore={endpoint,decode,encode,summary,validate,transform,diagnose};

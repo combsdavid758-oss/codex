@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Instant Form Deeplink Editor",
-  "version": "1.2.0",
+  "version": "1.3.0",
   "description": "Preview and apply a final CTA deeplink to one manually saved duplicate TikTok form.",
   "permissions": [
     "activeTab",
