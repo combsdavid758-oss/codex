@@ -27,26 +27,21 @@ Continue button is not a conversion. Only the final partner-download CTA calls
 mode. No Events API, server-side forwarding, console suppression or extra event
 transport is used.
 
-### Existing consent-manager integration (pending)
+### Advertising consent
 
-No existing consent manager or Cloudflare source was present in this checkout.
-The integration deliberately stays inactive until the existing manager reports
-explicit marketing consent through this bridge:
+`consent.js` and `consent.css` provide a small accept/reject notice on both entry
+pages. Unknown or rejected consent causes no SDK load or events and does not
+delay offer navigation. Dismissing the notice grants nothing; the site remains
+usable and the notice can be reopened through Privacy settings.
 
-```js
-// Call from the real CMP's initial-state callback and its consent-change handler.
-window.FunnelConsent.setMarketingConsent(marketingConsent === true);
-```
-
-`marketingConsent` above means the boolean supplied by the real consent manager;
-it is not a variable the funnel currently defines. The manager's name/callback
-must be supplied to complete this wiring. No new banner was added. Unknown or
-denied consent causes no SDK load or events and does not delay navigation.
-Revocation calls `ttq.revokeConsent()` and removes this helper's own unsent queue
-entries. Consent on each new document must be read from the actual manager; the
-bridge does not infer consent from the URL or store a separate consent decision.
-If an existing site integration already exposes a compatible `FunnelConsent`
-interface, the bridge preserves it.
+An explicit choice is stored in first-party localStorage for 180 days under
+`glusus.marketing-consent.v1`. The same choice is read by both funnel pages.
+If storage is unavailable, the choice works for the current document only.
+Privacy settings lets visitors accept or reject again. Storage changes from
+another tab update the current page. Revocation calls `ttq.revokeConsent()` and
+removes this helper's own unsent queue entries; previously sent events cannot be
+retracted. The API remains available as `window.FunnelConsent`, and an already
+provided compatible integration is preserved rather than replaced.
 
 ### Navigation and delivery
 
@@ -74,7 +69,7 @@ conversion-before-navigation, duplicate prevention, QA/invalid destinations, and
 continued navigation when the SDK is blocked. They emit no production events.
 
 Real SDK/event delivery has NOT been verified: the execution environment denies
-analytics.tiktok.com with a proxy CONNECT 403. After the real CMP is connected,
+analytics.tiktok.com with a proxy CONNECT 403. After deploying the integration,
 use TikTok Events Manager's Test Events workflow and browser Network tools to
 confirm the SDK loads, PageView appears after consent, and exactly one
 CompleteRegistration arrives from the final CTA. Check receipt while navigating,

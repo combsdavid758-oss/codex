@@ -1,0 +1,12 @@
+.consent-panel{position:fixed;z-index:1000;bottom:calc(110px + env(safe-area-inset-bottom));left:50%;transform:translateX(-50%);width:calc(100% - 24px);max-width:420px;max-height:calc(100dvh - 140px);overflow:auto;padding:18px;border:1px solid #dcdce2;border-radius:12px;background:#fff;color:#161823;box-shadow:0 5px 28px #0002;font-family:Arial,Helvetica,sans-serif;text-align:left}
+.consent-panel[hidden]{display:none}
+.consent-card-page .consent-panel{top:12px;bottom:auto}
+.consent-panel h2{margin:0 22px 8px 0;font-size:17px;line-height:1.25;letter-spacing:0}
+.consent-panel p{margin:0 0 14px;font-size:13px;line-height:1.5;color:#62636e}
+.consent-actions{display:flex;gap:10px}
+.consent-actions button{flex:1;min-height:44px;padding:9px 10px;border:1px solid #161823;border-radius:6px;background:#fff;color:#161823;font:600 13px/1.3 Arial,Helvetica,sans-serif;cursor:pointer}
+.consent-actions button:hover{background:#f3f3f6}
+.consent-settings{display:block;width:fit-content;margin:9px auto 0;padding:3px 5px;border:0;background:transparent;color:#62636e;font:11px/1.3 Arial,Helvetica,sans-serif;text-decoration:underline;cursor:pointer}
+.consent-dismiss{position:absolute;top:5px;right:6px;width:30px;height:30px;padding:0;border:0;background:transparent;color:#62636e;font:24px/1 Arial,Helvetica,sans-serif;cursor:pointer}
+.consent-actions button:focus-visible,.consent-settings:focus-visible,.consent-dismiss:focus-visible{outline:3px solid #00b9b4;outline-offset:3px}
+@media(max-height:550px){.consent-panel{padding:13px;bottom:90px}.consent-panel p{font-size:12px;margin-bottom:10px}.consent-settings{margin-top:4px}}

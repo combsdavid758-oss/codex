@@ -77,6 +77,10 @@ async function scenario(options = {}) {
 }
 async function grant(page) { await page.evaluate(() => window.FunnelConsent.setMarketingConsent(true)); }
 async function finalCTA(page) {
+  if (await page.locator('.consent-panel').isVisible()) {
+    // Continuing without a consent decision must remain possible, without tracking.
+    await page.getByRole('button', { name: 'Close privacy notice' }).click();
+  }
   await page.locator('#next').click();
   await page.locator('#steps-read-confirmation').check();
   await page.locator('#go').click();
@@ -193,5 +197,75 @@ test('popup entry sends PageView after consent, not conversion on Continue', asy
     assert.deepEqual(observed.events, ['PageView']);
     await page.locator('#continue').click(); await page.waitForURL(origin + '/index.html');
     assert(!observed.events.includes('CompleteRegistration'));
+  } finally { await context.close(); }
+});
+
+test('reject UI persists across funnel pages; privacy settings can reopen the choice', async () => {
+  const { page, context, observed } = await scenario();
+  try {
+    assert(await page.getByRole('region', { name: 'Advertising privacy' }).isVisible());
+    await page.getByRole('button', { name: 'Reject tracking', exact: true }).click();
+    assert(await page.locator('.consent-panel').isHidden());
+    await page.goto(origin + '/popup.html');
+    assert(await page.locator('.consent-panel').isHidden());
+    assert.equal(observed.sdk, 0);
+    await page.getByRole('button', { name: 'Privacy settings', exact: true }).click();
+    assert(await page.locator('.consent-panel').isVisible());
+    await page.getByRole('button', { name: 'Reject tracking', exact: true }).click();
+    await page.locator('#continue').click();
+    await page.waitForURL(origin + '/index.html');
+    await finalCTA(page); await page.waitForURL('https://www.stkstrck.com/**');
+    assert.equal(observed.sdk, 0); assert.deepEqual(observed.events, []);
+  } finally { await context.close(); }
+});
+
+test('accept UI enables each document once, and settings revocation suppresses conversion', async () => {
+  const { page, context, observed } = await scenario();
+  try {
+    await page.getByRole('button', { name: 'Accept tracking', exact: true }).click();
+    await page.waitForTimeout(350);
+    assert.deepEqual(observed.events, ['PageView']);
+    await page.goto(origin + '/popup.html');
+    await page.waitForTimeout(350);
+    assert(await page.locator('.consent-panel').isHidden());
+    assert.equal(observed.sdk, 2);
+    assert.deepEqual(observed.events, ['PageView', 'PageView']);
+    await page.getByRole('button', { name: 'Privacy settings', exact: true }).click();
+    await page.getByRole('button', { name: 'Reject tracking', exact: true }).click();
+    assert.equal(await page.evaluate(() => window.FunnelConsent.isMarketingGranted()), false);
+    await page.locator('#continue').click(); await page.waitForURL(origin + '/index.html');
+    await finalCTA(page); await page.waitForURL('https://www.stkstrck.com/**');
+    assert.equal(observed.sdk, 2);
+    assert(!observed.events.includes('CompleteRegistration'));
+  } finally { await context.close(); }
+});
+
+test('consent buttons fit a small phone viewport and storage failure does not break a choice', async () => {
+  const { page, context, observed } = await scenario();
+  try {
+    await page.setViewportSize({ width: 320, height: 480 });
+    for (const choice of ['Reject tracking', 'Accept tracking']) {
+      const bounds = await page.getByRole('button', { name: choice, exact: true }).boundingBox();
+      assert(bounds && bounds.x >= 0 && bounds.y >= 0 && bounds.x + bounds.width <= 320 && bounds.y + bounds.height <= 480);
+    }
+    await page.evaluate(() => { Storage.prototype.setItem = () => { throw new Error('Storage blocked'); }; });
+    await page.getByRole('button', { name: 'Reject tracking', exact: true }).click();
+    assert(await page.locator('.consent-panel').isHidden());
+    assert.equal(observed.sdk, 0);
+    await finalCTA(page); await page.waitForURL('https://www.stkstrck.com/**');
+    assert.deepEqual(observed.errors, []);
+  } finally { await context.close(); }
+});
+
+test('privacy notice does not cover the popup Continue button', async () => {
+  const { page, context, observed } = await scenario();
+  try {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.goto(origin + '/popup.html');
+    const notice = await page.locator('.consent-panel').boundingBox();
+    const button = await page.locator('#continue').boundingBox();
+    assert(notice.y + notice.height <= button.y);
+    await page.locator('#continue').click(); await page.waitForURL(origin + '/index.html');
+    assert.equal(observed.sdk, 0);
   } finally { await context.close(); }
 });
