@@ -12,9 +12,19 @@ function decode(body) {
  } else return null;
  if (!outer || typeof outer.page_id!=='string' || !/^\d+$/.test(outer.page_id)) return null;
  const config=typeof outer.data==='string'?JSON.parse(outer.data):outer.data;
- const link=config?.data?.thanksPageFormCta?.buttonsInfo?.website?.link;
- if (!link || link.linkType!=='url') return null;
- return {outer,config,link,format,stringData:typeof outer.data==='string'};
+ const nodes=config?.data;
+ if (!nodes || typeof nodes!=='object') return null;
+ const ids=Object.keys(nodes).filter(id=>{
+  const node=nodes[id]; if(!node?.buttonsInfo?.website?.link || /nonlead/i.test(id)) return false;
+  if(['thanksPageFormCta','leadFormCTA'].includes(id)) return true;
+  let parent=node.parent; const seen=new Set();
+  while(parent && !seen.has(parent)) {if(/nonlead/i.test(parent))return false;if(/thanks/i.test(parent))return true;seen.add(parent);parent=nodes[parent]?.parent;}
+  return false;
+ });
+ if(ids.length!==1) return null;
+ const nodeId=ids[0],link=nodes[nodeId].buttonsInfo.website.link;
+ if(link.linkType!=='url') return null;
+ return {outer,config,link,nodeId,format,stringData:typeof outer.data==='string'};
 }
 function encode(d) {
  d.outer.data=d.stringData?JSON.stringify(d.config):d.config;
@@ -33,10 +43,10 @@ function validate(plan) {
  if(plan.deeplink.length>8000) throw Error('Deeplink is too long.');
  return plan;
 }
-function summary(d) { return {pageId:d.outer.page_id,title:String(d.outer.title||''),fallback:d.link.url||'',deeplink:d.link.scheme||''}; }
+function summary(d) { return {pageId:d.outer.page_id,title:String(d.outer.title||''),fallback:d.link.url||'',deeplink:d.link.scheme||'',nodeId:d.nodeId}; }
 function transform(body, plan) {
  validate(plan); const d=decode(body);
- if(!d || d.outer.page_id!==plan.pageId) return null;
+ if(!d || (d.outer.page_id!==plan.pageId || (plan.nodeId && d.nodeId!==plan.nodeId))) return null;
  // Only these two values change. Preserve nested deeplink flags, questions and routing.
  d.link.url=plan.fallback; d.link.scheme=plan.deeplink;
  return encode(d);

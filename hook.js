@@ -1,9 +1,10 @@
 (() => {
 if(window.__formLinkEditorInstalled) return;
 window.__formLinkEditorInstalled=true;
+let observedWrites=0, formSaves=0;
 let plan=null, candidate=null, message='Ready. Save a duplicate form once to detect its final CTA.', expires=0;
 const core=window.FormLinkCore;
-const state=()=>{if(plan && Date.now()>expires){plan=null;message='Pending change expired. Review and arm again.';}return {candidate,armed:!!plan,message};};
+const state=()=>{if(plan && Date.now()>expires){plan=null;message='Pending change expired. Review and arm again.';}return {candidate,armed:!!plan,message,observedWrites,formSaves};};
 function announce(){window.dispatchEvent(new CustomEvent('form-link-state',{detail:JSON.stringify(state())}));}
 window.addEventListener('form-link-command',e=>{
  try {
@@ -18,9 +19,16 @@ window.addEventListener('form-link-command',e=>{
 });
 function prepare(url,method,body){
  let target; try{target=new URL(url,location.href);}catch{return {body};}
+ if(['POST','PUT','PATCH'].includes(method.toUpperCase()) && target.origin==='https://ads.tiktok.com') {
+  observedWrites++;
+  if(target.pathname.includes('/instant_page/')) {
+   formSaves++; if(target.pathname.endsWith('/create/')) message='New form creation observed. Reopen the saved duplicate, edit it, then Save again to detect its update.';
+   announce();
+  }
+ }
  if(method.toUpperCase()!=='POST' || target.origin+target.pathname!==core.endpoint) return {body};
  try{
-  const d=core.decode(body); if(!d) {message='Save observed, but this form format is not supported.'; announce();return {body};}
+  const d=core.decode(body); if(!d) {message='Update request observed, but no unique final website CTA was found. Make sure Final page has a website button configured.'; announce();return {body};}
   candidate=core.summary(d);
   if(plan && Date.now()>expires) {plan=null; message='Change expired. Review and arm again.';}
   if(!plan){message='Detected final website CTA. Review the deeplink below.';announce();return {body};}
