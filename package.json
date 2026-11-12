@@ -4,6 +4,10 @@
   "private": true,
   "scripts": {
     "start": "python3 -m http.server 3000 --bind 0.0.0.0",
-    "check": "node --check app.js && node --check config.js"
+    "check": "node --check app.js && node --check config.js && node --check consent.js && node --check tiktok-pixel.js",
+    "test": "node --test tests/*.test.cjs"
+  },
+  "devDependencies": {
+    "playwright": "1.62.1"
   }
 }

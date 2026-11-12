@@ -6,6 +6,7 @@
   const acknowledgement = $('steps-read-confirmation');
   const go = $('go');
   const status = $('status');
+  let navigating = false;
 
   function show(isSteps, focus = true) {
     intro.hidden = isSteps;
@@ -18,6 +19,7 @@
   }
 
   function reset() {
+    navigating = false;
     go.disabled = !acknowledgement.checked;
     $('go-label').textContent = 'Download Playful Rewards';
     status.textContent = '';
@@ -25,12 +27,15 @@
 
   $('next').addEventListener('click', () => show(true));
   $('back').addEventListener('click', () => show(false));
-  acknowledgement.addEventListener('change', reset);
+  acknowledgement.addEventListener('change', () => {
+    if (!navigating) reset();
+  });
   window.addEventListener('pageshow', reset);
   show(new URL(location.href).searchParams.get('stage') === 'steps', false);
 
-  form.addEventListener('submit', (event) => {
+  form.addEventListener('submit', async (event) => {
     event.preventDefault();
+    if (navigating) return;
     if (!form.reportValidity()) return;
     if (new URL(location.href).searchParams.get('qa') === 'receipt') {
       status.textContent = 'Test mode: download blocked.';
@@ -44,10 +49,15 @@
     try {
       const url = new URL(destination);
       if (url.protocol !== 'https:') throw new Error('HTTPS required');
+      navigating = true;
       go.disabled = true;
       $('go-label').textContent = 'Opening Playful Rewards…';
+      // Tracking cannot prevent the offer from opening if the SDK is blocked.
+      try { await window.FunnelPixel?.trackRegistration(); } catch {}
       location.assign(url.href);
     } catch {
+      navigating = false;
+      go.disabled = !acknowledgement.checked;
       status.textContent = 'The download link is unavailable. Please try again later.';
     }
   });
