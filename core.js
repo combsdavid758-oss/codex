@@ -1,0 +1,45 @@
+(() => {
+const endpoint = 'https://ads.tiktok.com/instant_page/api/v1/update/';
+function decode(body) {
+ let outer, format;
+ if (typeof body === 'string') {
+  try { outer = JSON.parse(body); format='json'; }
+  catch { const q=new URLSearchParams(body); if (!q.has('data')) return null; outer=Object.fromEntries(q); format='params'; }
+ } else if (body instanceof URLSearchParams) { outer=Object.fromEntries(body); format='urlparams'; }
+ else if (typeof FormData !== 'undefined' && body instanceof FormData) {
+  if ([...body.values()].some(v=>typeof v!=='string')) return null;
+  outer=Object.fromEntries(body); format='form';
+ } else return null;
+ if (!outer || typeof outer.page_id!=='string' || !/^\d+$/.test(outer.page_id)) return null;
+ const config=typeof outer.data==='string'?JSON.parse(outer.data):outer.data;
+ const link=config?.data?.thanksPageFormCta?.buttonsInfo?.website?.link;
+ if (!link || link.linkType!=='url') return null;
+ return {outer,config,link,format,stringData:typeof outer.data==='string'};
+}
+function encode(d) {
+ d.outer.data=d.stringData?JSON.stringify(d.config):d.config;
+ if(d.format==='json') return JSON.stringify(d.outer);
+ const q=new URLSearchParams(); for(const [k,v] of Object.entries(d.outer)) q.append(k,v);
+ if(d.format==='urlparams') return q;
+ if(d.format==='form') { const f=new FormData(); for(const [k,v] of q) f.append(k,v); return f; }
+ return q.toString();
+}
+function validate(plan) {
+ if(!plan || !/^\d+$/.test(plan.pageId)) throw Error('A recognized existing form is required.');
+ const fallback=new URL(plan.fallback);
+ if(fallback.protocol!=='https:') throw Error('Fallback must use HTTPS.');
+ const deep=new URL(plan.deeplink);
+ if(!['snssdk1233:','https:'].includes(deep.protocol)) throw Error('Use an HTTPS or snssdk1233 deeplink.');
+ if(plan.deeplink.length>8000) throw Error('Deeplink is too long.');
+ return plan;
+}
+function summary(d) { return {pageId:d.outer.page_id,title:String(d.outer.title||''),fallback:d.link.url||'',deeplink:d.link.scheme||''}; }
+function transform(body, plan) {
+ validate(plan); const d=decode(body);
+ if(!d || d.outer.page_id!==plan.pageId) return null;
+ // Only these two values change. Preserve nested deeplink flags, questions and routing.
+ d.link.url=plan.fallback; d.link.scheme=plan.deeplink;
+ return encode(d);
+}
+globalThis.FormLinkCore={endpoint,decode,encode,summary,validate,transform};
+})();

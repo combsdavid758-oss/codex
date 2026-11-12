@@ -1,0 +1,13 @@
+<!doctype html><html lang="en"><meta charset="utf-8"><title>Instant Form Deeplink Editor</title><link rel="stylesheet" href="editor.css">
+<h1>Instant Form Deeplink Editor</h1>
+<p>Open a <b>duplicate</b> Instant Form, reload Ads Manager once after installing, then make a small edit and click <b>Save</b>. Reopen this extension.</p>
+<p>This edits the final website CTA. It does not change X, remove questions, or launch a popup automatically.</p>
+<button id="refresh">Detect saved form / refresh</button><pre id="detected">Checking…</pre>
+<label>HTTPS fallback URL<input id="fallback" value="https://glusus.vercel.app/popup.html"></label>
+<button id="generate">Generate Glusus popup deeplink</button>
+<label>Final CTA deeplink<textarea id="deeplink" rows="5"></textarea></label>
+<button id="preview">Preview change</button><pre id="diff">Review a detected form before applying.</pre>
+<button id="arm" disabled>Apply to next Save (2 minutes)</button> <button id="disarm">Cancel pending change</button>
+<p id="status" role="status"></p>
+<p>After applying, make a small edit and click TikTok’s <b>Save</b>. Avoid Complete / Publish: the extension cannot distinguish buttons that use the same save endpoint. Reopen the saved form and verify before using it in an ad. Some TikTok runtimes ignore the standalone scheme field.</p>
+<script src="core.js"></script><script src="editor.js"></script></html>
