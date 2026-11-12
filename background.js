@@ -18,8 +18,8 @@ chrome.runtime.onMessage.addListener((m,sender,respond)=>{
    if(m.command.type==='arm')return await chrome.tabs.sendMessage(m.tabId,m.command,{frameId:selected[0].frameId});
    if(selected.length===1)return selected[0].state;
    const writes=frames.reduce((n,f)=>n+(f.state.observedWrites||0),0),saves=frames.reduce((n,f)=>n+(f.state.formSaves||0),0);
-   const informative=frames.find(f=>f.state.formSaves>0);
-   return {message:informative?.state.message || (frames.length?'Connected. Make a small form edit and click Save.':'No editor frame connected. Reload Ads Manager after updating the extension.'),diagnostics:{connectedFrames:frames.length,observedWrites:writes,instantPageRequests:saves,recognizedForms:selected.length}};
+   const informative=frames.find(f=>f.state.message && !f.state.message.startsWith('Ready.')); 
+   return {message:informative?.state.message || (frames.length?'Connected, but no supported update has been identified. See request diagnostics above.':'No editor frame connected. Reload Ads Manager after updating the extension.'),diagnostics:{connectedFrames:frames.length,observedWrites:writes,instantPageRequests:saves,recognizedForms:selected.length,frames:frames.map(f=>({frame:f.frameId,message:f.state.message,recentRequests:f.state.recentRequests||[]}))}};
   })().then(respond).catch(e=>respond({message:e.message}));return true;
  }
 });

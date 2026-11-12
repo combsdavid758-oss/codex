@@ -1,9 +1,9 @@
 const $=id=>document.getElementById(id);
-let tabId,candidate,reviewed;
+let tabId,candidate,reviewed,lastState;
 async function command(c){
  if(!tabId)throw Error('Open the duplicate form in an ads.tiktok.com tab first.');
  const s=await chrome.runtime.sendMessage({type:'editor-command',tabId,command:c});
- candidate=s.candidate; $('detected').textContent=candidate?JSON.stringify(candidate,null,2):JSON.stringify(s.diagnostics||{message:'No recognized save yet.'},null,2);
+ lastState=s; candidate=s.candidate; $('detected').textContent=candidate?JSON.stringify(candidate,null,2):JSON.stringify(s.diagnostics||{message:'No recognized save yet.'},null,2);
  $('status').textContent=s.message;return s;
 }
 function reset(){reviewed=null;$('arm').disabled=true;}
@@ -20,3 +20,5 @@ $('preview').onclick=()=>{try{
 $('arm').onclick=async()=>{try{await command({type:'arm',plan:reviewed});reset();}catch(e){report(e);}};
 $('disarm').onclick=()=>{reset();command({type:'disarm'}).catch(report);};
 (async()=>{const [tab]=await chrome.tabs.query({active:true,currentWindow:true});tabId=tab?.id;$('generate').click();await command({type:'status'});})().catch(()=>report(Error('Reload the Ads Manager tab after installing, then open this extension again.')));
+
+$('copy-diagnostics').onclick=async()=>{const text=JSON.stringify(lastState,null,2);try{await navigator.clipboard.writeText(text);$('status').textContent='Diagnostic report copied.';}catch{$('detected').textContent=text;$('status').textContent='Select and copy the diagnostic report above.';}};

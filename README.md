@@ -16,3 +16,5 @@ This is an experimental editor for the standalone scheme field observed in the s
 Validation: mock-page Chromium tests passed for fetch, Request objects, XHR, JSON and form URL encoding, matching-page checks, one-shot consumption, create exclusion, and cancel. Full extension installation was blocked in the development browser by its administrator policy and remains to be checked in your Chrome.
 
 Version 1.1 supports leadFormCTA and unique final website CTA nodes in other form layouts. It discovers editor frames and displays connected-frame/request counts when detection fails. Update the extension, then reload Ads Manager. Configure a website button in Final page before the detection save.
+
+Version 1.2 fixes stale frame status selection, accepts the same update endpoint without a trailing slash, and adds a Copy diagnostic report button. Diagnostics include only request paths with long numeric IDs masked, field names, CTA node structure and frame messages. They exclude URLs in field values, account IDs, headers, cookies and full request bodies. This release does not claim to resolve an unknown endpoint or schema.

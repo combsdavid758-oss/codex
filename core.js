@@ -26,6 +26,23 @@ function decode(body) {
  if(link.linkType!=='url') return null;
  return {outer,config,link,nodeId,format,stringData:typeof outer.data==='string'};
 }
+function diagnose(body) {
+ let outer, bodyFormat=typeof body;
+ try {
+  if(typeof body==='string') {try{outer=JSON.parse(body);bodyFormat='JSON';}catch{outer=Object.fromEntries(new URLSearchParams(body));bodyFormat='URL encoded';}}
+  else if(body instanceof URLSearchParams || (typeof FormData!=='undefined' && body instanceof FormData)){outer=Object.fromEntries(body);bodyFormat=body.constructor.name;}
+  if(!outer || typeof outer!=='object')return {bodyFormat};
+  const result={bodyFormat,topLevelKeys:Object.keys(outer).slice(0,25),hasPageId:typeof outer.page_id==='string',hasData:!!outer.data};
+  let config=outer.data;
+  if(typeof config==='string'){try{config=JSON.parse(config);}catch{result.dataFormat='not JSON';return result;}}
+  if(config && typeof config==='object'){
+   result.configKeys=Object.keys(config).slice(0,15);
+   const nodes=config.data;
+   if(nodes && typeof nodes==='object')result.websiteCtas=Object.entries(nodes).filter(([,n])=>n?.buttonsInfo?.website).slice(0,10).map(([id,n])=>({nodeId:id,parent:n.parent||'',hasLink:!!n.buttonsInfo.website.link,linkKeys:Object.keys(n.buttonsInfo.website.link||{}),linkType:['url','appDownload'].includes(n.buttonsInfo.website.link?.linkType)?n.buttonsInfo.website.link.linkType:'other'}));
+  }
+  return result;
+ }catch{return {bodyFormat,parseError:true};}
+}
 function encode(d) {
  d.outer.data=d.stringData?JSON.stringify(d.config):d.config;
  if(d.format==='json') return JSON.stringify(d.outer);
@@ -51,5 +68,5 @@ function transform(body, plan) {
  d.link.url=plan.fallback; d.link.scheme=plan.deeplink;
  return encode(d);
 }
-globalThis.FormLinkCore={endpoint,decode,encode,summary,validate,transform};
+globalThis.FormLinkCore={endpoint,decode,encode,summary,validate,transform,diagnose};
 })();

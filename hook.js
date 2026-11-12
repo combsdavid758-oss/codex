@@ -1,10 +1,10 @@
 (() => {
 if(window.__formLinkEditorInstalled) return;
 window.__formLinkEditorInstalled=true;
-let observedWrites=0, formSaves=0;
+let observedWrites=0, formSaves=0; const recentRequests=[];
 let plan=null, candidate=null, message='Ready. Save a duplicate form once to detect its final CTA.', expires=0;
 const core=window.FormLinkCore;
-const state=()=>{if(plan && Date.now()>expires){plan=null;message='Pending change expired. Review and arm again.';}return {candidate,armed:!!plan,message,observedWrites,formSaves};};
+const state=()=>{if(plan && Date.now()>expires){plan=null;message='Pending change expired. Review and arm again.';}return {candidate,armed:!!plan,message,observedWrites,formSaves,recentRequests};};
 function announce(){window.dispatchEvent(new CustomEvent('form-link-state',{detail:JSON.stringify(state())}));}
 window.addEventListener('form-link-command',e=>{
  try {
@@ -22,11 +22,11 @@ function prepare(url,method,body){
  if(['POST','PUT','PATCH'].includes(method.toUpperCase()) && target.origin==='https://ads.tiktok.com') {
   observedWrites++;
   if(target.pathname.includes('/instant_page/')) {
-   formSaves++; if(target.pathname.endsWith('/create/')) message='New form creation observed. Reopen the saved duplicate, edit it, then Save again to detect its update.';
+   formSaves++; recentRequests.push({method:method.toUpperCase(),path:target.pathname.replace(/\d{6,}/g,'[id]'),...core.diagnose(body)}); if(recentRequests.length>12)recentRequests.shift(); if(target.pathname.endsWith('/create/')) message='New form creation observed. Reopen the saved duplicate, edit it, then Save again to detect its update.';
    announce();
   }
  }
- if(method.toUpperCase()!=='POST' || target.origin+target.pathname!==core.endpoint) return {body};
+ if(method.toUpperCase()!=='POST' || target.origin+target.pathname.replace(/\/?$/,'/')!==core.endpoint) return {body};
  try{
   const d=core.decode(body); if(!d) {message='Update request observed, but no unique final website CTA was found. Make sure Final page has a website button configured.'; announce();return {body};}
   candidate=core.summary(d);
@@ -45,7 +45,7 @@ window.fetch=async function(input,init){
  let body=init?.body;
  // Request bodies need asynchronous cloning; ordinary fetch inputs remain untouched.
  if(req && body===undefined && method.toUpperCase()==='POST') {
-  try {const u=new URL(input.url);if(u.origin+u.pathname===core.endpoint) body=await input.clone().text();}catch{}
+  try {const u=new URL(input.url);if(u.origin==='https://ads.tiktok.com' && u.pathname.includes('/instant_page/')) body=await input.clone().text();}catch{}
  }
  const prepared=prepare(req?input.url:String(input),method,body);
  try{
